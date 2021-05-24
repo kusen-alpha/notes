@@ -1,0 +1,22 @@
+https验证服务器（安卓）时，通常有3种方式：
+1、根据浏览器或者说操作系统(Android )自带的证书链（证书机构购买证书）
+2、使用自签名证书（多用于内网使用）
+3、自签名证书加上SSL Pinning特性（安全性最高、需要浏览器插件或客户端需要使用SSL Pinning特性）
+
+SSL Pinning，即SSL证书绑定，是验证服务器身份的一种方式，是在https协议建立通信时增加的代码逻辑，它通过自己的方式验证服务器身份，然后决定通信是否继续下去。它唯一指定了服务器的身份，所以安全性较高。
+
+SSL Pinning方式解决方案：安装Xposed框架+JustTruestMe组件
+
+
+Xposed是一个框架，它可以改变系统和应用程序的行为，而不接触任何APK。它支持很多模块，每个模块可以用来帮助实现不同的功能。
+
+JustTrustMe是一个用来禁用、绕过SSL证书检查的，他基于Xposed模块。JustTrustMe是将APK中所有用于校验SSL证书的API都进行了屏蔽，从而绕过证书检查。
+
+Xposed框架安装注意事项：
+手机必须获取root权限
+安装xposed框架有手机变砖危险! ! !
+手机可以直接刷带有xposed框架的系统
+
+Xposed框架下载地址：https://repo.xposed.info/module/de.robv.android.xposed.installer
+justTruestme组件下载地址: https://github.com/Fuzion24/JustTrustMe/releases/tag/v.2
+
