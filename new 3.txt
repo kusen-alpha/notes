@@ -1,3 +1,6 @@
+安卓应用抓包时无法联网时：
+
+
 https验证服务器（安卓）时，通常有3种方式：
 1、根据浏览器或者说操作系统(Android )自带的证书链（证书机构购买证书）
 2、使用自签名证书（多用于内网使用）
@@ -15,8 +18,8 @@ JustTrustMe是一个用来禁用、绕过SSL证书检查的，他基于Xposed模
 Xposed框架安装注意事项：
 手机必须获取root权限
 安装xposed框架有手机变砖危险! ! !
-手机可以直接刷带有xposed框架的系统
+手机可以直接刷带有xposed框架的系统。
 
 Xposed框架下载地址：https://repo.xposed.info/module/de.robv.android.xposed.installer
-justTruestme组件下载地址: https://github.com/Fuzion24/JustTrustMe/releases/tag/v.2
+justTruestme组件下载地址: https://github.com/Fuzion24/JustTrustMe/releases/tag/v.2（安装后在xpose模块中勾选）
 
