@@ -20,3 +20,72 @@ Node.js的运用
 windows:下载安装，配置环境变量。
 
 安装测试：终端输入node,能进入node.js的交互环境。
+
+
+nodejs支持ES语法，其代码文件为.js后缀，运行：node xxx.js。
+
+
+模块
+node.js采用commonjs规范，一个文件即一个模块，文件路径即模块名。
+模块的分类
+1、核心模块（系统封装好的）
+2、自定义模块。
+3、第三方模块（npm下载的模块）
+
+模块导入
+模块导入用到有require、exports和module。
+一个模块中的JS代码仅在模块第一次被使用时执行一次，并且在使用的过程中进行初始化，之后缓存起来便于后续继续使用。
+主模块：通过命令行参数传递给Node]S以启动程序的模块被称为主模块。主模块负责调度组成整个程序的其它模块完成工作。
+
+
+require
+require函数用来在一个模块中引入另外一个模块。传入一个模块名，返回一个模块导出对象。用法∶let xxx=require('.../xxx')，路径（可为绝对路径和相对路径）可以省略.js后缀。
+优先在加载该包的模块的同级目录node_modules中查找第三方包，找到该第三方包中的package. json文件，并且找到里面的main属性对应的入口模块，该入口模块即为加载的第三方模块，如果在要加载的第三方包中没有找到package. json文件或者是package. json文件中没有main属性，则默认加载第三方包中的index.js文件，如果在加载第三方模块的文件的同级目录没有找到node_modules文件夹，或者以上所有情况都没有找到，则会向上一级父级目录下查找node-modules文件夹，查找规则如上一致，如果一直没有找到则报错。
+
+
+
+
+exports
+exports对象用来导出当前模块的公共方法或属性，别的模块通过require函数使用当前模块时得到的就是当前模块的exports对象。用法:exports.name=xxx ,name为导出的对象名。
+如果没有指定，其他模块导入该模块时，会得到一个空对象。
+
+module
+系统默认设置exports=module.exports,因此它们引用的是用一个对象。
+
+nmp
+安装：nmp install [-g] xxx --registry=镜像源
+淘宝镜像：
+命令：
+npm -v：查看npm版本。
+npm init：初始化后会出现一个package.json配置文件。可以在后面加上-y，快速跳过问答式界面。
+npm install：会根据项目中的package.json文件自动下载项目所需的全部依赖。
+npm install 包名：指定安装包。
+npm list:查看当前目录下已安装的node包。
+npm list -g:查看当前目录下已安装的node包。
+npm --help：帮助命令。
+npm 命令 --help：查看命令帮助文档。
+npm update 包名:更新包。
+npm uninstall 包名：卸载包。
+npm config list：查看配置信息。
+npm info 包名：在线查看包的版本信息。
+npm config set registry 源：修改包下载源。
+npm root：查看当前包的安装路径。
+npm root -g：查看全局包的安装路径。
+npm ls 包名：查看本地包的版本信息。
+npm ls 包名 -g：查看全局包的版本信息。
+
+
+
+文件系统
+导入模块：var fs = require('fs');
+fs对象提供了很多文件相关的方法。
+
+
+
+
+
+
+
+
+
+
