@@ -23,3 +23,25 @@ Xposed框架安装注意事项：
 Xposed框架下载地址：https://repo.xposed.info/module/de.robv.android.xposed.installer
 justTruestme组件下载地址: https://github.com/Fuzion24/JustTrustMe/releases/tag/v.2（安装后在xpose模块中勾选）
 
+夜神4.42安卓模拟器Xposed框架链接：
+https://pan.baidu.com/s/1depSSHCy0KYcFZzkPH7aZQ 密码: vmyr
+夜神5.11安卓模拟器Xposed框架链接：
+https://pan.baidu.com/s/1erZD4gMk1MQdVklnrmSuLg 密码: s4j4
+
+
+其中一种安装方式：
+下载sdk：https://dl-xda.xposed.info/framework/ 版本对应为25->安卓7  模拟器选择x86，真实设备选择arm64。
+下载脚本：https://forum.xda-developers.com/attachment.php?attachmentid=4489568&d=1525092710
+本地解压xposed-x86_64.zip，并文件夹改名为system
+script.txt改名为script.sh
+创建文件夹xposed, 把system文件夹和script.sh放入xposed文件夹。
+把xposed文件夹放入模拟器（即运行的安卓系统，不是雷电安装目录）/system目录下
+执行：
+cd /system
+mount -o remount -w /system
+cd xposed
+sh script.sh
+reboot
+
+
+
