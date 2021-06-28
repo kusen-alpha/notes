@@ -81,6 +81,32 @@ npm ls 包名 -g：查看全局包的版本信息。
 fs对象提供了很多文件相关的方法。
 
 
+封装写文件
+var fs = require('fs');
+function writeFs(path, content) {
+    return new Promise(function (resolve, reject) {
+        fs.writeFile(path, content, {flag: 'a', encoding: 'utf8'}, function (err) {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                console.log('write success!');
+                resolve(err);
+            }
+        })
+    })
+}
+
+async function writeFsList() {
+    await writeFs('test.txt', '1\n');
+    await writeFs('test.txt', '2\n');
+    await writeFs('test.txt', '3\n');
+}
+
+writeFsList();
+
+
+
 
 
 
