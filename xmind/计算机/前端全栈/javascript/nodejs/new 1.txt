@@ -106,6 +106,31 @@ async function writeFsList() {
 writeFsList();
 
 
+输入输出
+var readline=require('readline');为输入。
+
+
+
+Stream流
+WriteStream：写入流。
+ReadStream：读取流。
+
+
+事件循环
+Node.js是单进程单线程应用程序，但是因为V8引擎提供的异步执行回调接口，通过这些接口可以处理大量的并发，所以性能非常高。
+Node.js几乎每一个API都是支持回调函数的。
+Node.js基本上所有的事件机制都是用设计模式中观察者模式实现。
+Node,js单线程类似进入一个while(true)的事件循环，直到没有事件观察者退出，每个异步事件都生成一个事件观察者，如果有事件发生就调用该回调函数.
+
+事件驱动模型
+
+
+var event = require('event');
+
+
+路径操作模块：path
+
+
 
 
 
