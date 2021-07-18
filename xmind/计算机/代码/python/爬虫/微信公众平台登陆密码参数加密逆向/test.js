@@ -1,151 +1,242 @@
-var n = {};
-function d(e, t) {
-    var n = (65535 & e) + (65535 & t);
-    return (e >> 16) + (t >> 16) + (n >> 16) << 16 | 65535 & n
+var CryptoJS = CryptoJS ||
+function(o, q) {
+var l = {},
+m = l.lib = {},
+n = m.Base = function() {
+    function a() {}
+    return {
+        extend: function(e) {
+            a.prototype = this;
+            var c = new a;
+            e && c.mixIn(e);
+            c.$super = this;
+            return c
+        },
+        create: function() {
+            var a = this.extend();
+            a.init.apply(a, arguments);
+            return a
+        },
+        init: function() {},
+        mixIn: function(a) {
+            for (var c in a) a.hasOwnProperty(c) && (this[c] = a[c]);
+            a.hasOwnProperty("toString") && (this.toString = a.toString)
+        },
+        clone: function() {
+            return this.$super.extend(this)
+        }
+    }
+} (),
+j = m.WordArray = n.extend({
+    init: function(a, e) {
+        a = this.words = a || [];
+        this.sigBytes = e != q ? e: 4 * a.length
+    },
+    toString: function(a) {
+        return (a || r).stringify(this)
+    },
+    concat: function(a) {
+        var e = this.words,
+        c = a.words,
+        d = this.sigBytes,
+        a = a.sigBytes;
+        this.clamp();
+        if (d % 4) for (var b = 0; b < a; b++) e[d + b >>> 2] |= (c[b >>> 2] >>> 24 - 8 * (b % 4) & 255) << 24 - 8 * ((d + b) % 4);
+        else if (65535 < c.length) for (b = 0; b < a; b += 4) e[d + b >>> 2] = c[b >>> 2];
+        else e.push.apply(e, c);
+        this.sigBytes += a;
+        return this
+    },
+    clamp: function() {
+        var a = this.words,
+        e = this.sigBytes;
+        a[e >>> 2] &= 4294967295 << 32 - 8 * (e % 4);
+        a.length = o.ceil(e / 4)
+    },
+    clone: function() {
+        var a = n.clone.call(this);
+        a.words = this.words.slice(0);
+        return a
+    },
+    random: function(a) {
+        for (var e = [], c = 0; c < a; c += 4) e.push(4294967296 * o.random() | 0);
+        return j.create(e, a)
+    }
+}),
+k = l.enc = {},
+r = k.Hex = {
+    stringify: function(a) {
+        for (var e = a.words,
+        a = a.sigBytes,
+        c = [], d = 0; d < a; d++) {
+            var b = e[d >>> 2] >>> 24 - 8 * (d % 4) & 255;
+            c.push((b >>> 4).toString(16));
+            c.push((b & 15).toString(16))
+        }
+        return c.join("")
+    },
+    parse: function(a) {
+        for (var b = a.length,
+        c = [], d = 0; d < b; d += 2) c[d >>> 3] |= parseInt(a.substr(d, 2), 16) << 24 - 4 * (d % 8);
+        return j.create(c, b / 2)
+    }
+},
+p = k.Latin1 = {
+    stringify: function(a) {
+        for (var b = a.words,
+        a = a.sigBytes,
+        c = [], d = 0; d < a; d++) c.push(String.fromCharCode(b[d >>> 2] >>> 24 - 8 * (d % 4) & 255));
+        return c.join("")
+    },
+    parse: function(a) {
+        for (var b = a.length,
+        c = [], d = 0; d < b; d++) c[d >>> 2] |= (a.charCodeAt(d) & 255) << 24 - 8 * (d % 4);
+        return j.create(c, b)
+    }
+},
+h = k.Utf8 = {
+    stringify: function(a) {
+        try {
+            return decodeURIComponent(escape(p.stringify(a)))
+        } catch(b) {
+            throw Error("Malformed UTF-8 data");
+        }
+    },
+    parse: function(a) {
+        return p.parse(unescape(encodeURIComponent(a)))
+    }
+},
+b = m.BufferedBlockAlgorithm = n.extend({
+    reset: function() {
+        this._data = j.create();
+        this._nDataBytes = 0
+    },
+    _append: function(a) {
+        "string" == typeof a && (a = h.parse(a));
+        this._data.concat(a);
+        this._nDataBytes += a.sigBytes
+    },
+    _process: function(a) {
+        var b = this._data,
+        c = b.words,
+        d = b.sigBytes,
+        f = this.blockSize,
+        i = d / (4 * f),
+        i = a ? o.ceil(i) : o.max((i | 0) - this._minBufferSize, 0),
+        a = i * f,
+        d = o.min(4 * a, d);
+        if (a) {
+            for (var h = 0; h < a; h += f) this._doProcessBlock(c, h);
+            h = c.splice(0, a);
+            b.sigBytes -= d
+        }
+        return j.create(h, d)
+    },
+    clone: function() {
+        var a = n.clone.call(this);
+        a._data = this._data.clone();
+        return a
+    },
+    _minBufferSize: 0
+});
+m.Hasher = b.extend({
+    init: function() {
+        this.reset()
+    },
+    reset: function() {
+        b.reset.call(this);
+        this._doReset()
+    },
+    update: function(a) {
+        this._append(a);
+        this._process();
+        return this
+    },
+    finalize: function(a) {
+        a && this._append(a);
+        this._doFinalize();
+        return this._hash
+    },
+    clone: function() {
+        var a = b.clone.call(this);
+        a._hash = this._hash.clone();
+        return a
+    },
+    blockSize: 16,
+    _createHelper: function(a) {
+        return function(b, c) {
+            return a.create(c).finalize(b)
+        }
+    },
+    _createHmacHelper: function(a) {
+        return function(b, c) {
+            return f.HMAC.create(a, c).finalize(b)
+        }
+    }
+});
+var f = l.algo = {};
+return l
+} (Math); (function(o) {
+function q(b, f, a, e, c, d, g) {
+    b = b + (f & a | ~f & e) + c + g;
+    return (b << d | b >>> 32 - d) + f
 }
-
-function s(e, t, n, o, i, r) {
-    return d((a = d(d(t, e), d(o, r))) << (s = i) | a >>> 32 - s, n);
-    var a, s
+function l(b, f, a, e, c, d, g) {
+    b = b + (f & e | a & ~e) + c + g;
+    return (b << d | b >>> 32 - d) + f
 }
-
-function p(e, t, n, o, i, r, a) {
-    return s(t & n | ~t & o, e, t, i, r, a)
+function m(b, f, a, e, c, d, g) {
+    b = b + (f ^ a ^ e) + c + g;
+    return (b << d | b >>> 32 - d) + f
 }
-
-function f(e, t, n, o, i, r, a) {
-    return s(t & o | n & ~o, e, t, i, r, a)
+function n(b, f, a, e, c, d, g) {
+    b = b + (a ^ (f | ~e)) + c + g;
+    return (b << d | b >>> 32 - d) + f
 }
+var j = CryptoJS,
+k = j.lib,
+r = k.WordArray,
+k = k.Hasher,
+p = j.algo,
+h = []; (function() {
+    for (var b = 0; 64 > b; b++) h[b] = 4294967296 * o.abs(o.sin(b + 1)) | 0
+})();
+p = p.MD5 = k.extend({
+    _doReset: function() {
+        this._hash = r.create([1732584193, 4023233417, 2562383102, 271733878])
+    },
+    _doProcessBlock: function(b, f) {
+        for (var a = 0; 16 > a; a++) {
+            var e = f + a,
+            c = b[e];
+            b[e] = (c << 8 | c >>> 24) & 16711935 | (c << 24 | c >>> 8) & 4278255360
+        }
+        for (var e = this._hash.words,
+        c = e[0], d = e[1], g = e[2], i = e[3], a = 0; 64 > a; a += 4) 16 > a ? (c = q(c, d, g, i, b[f + a], 7, h[a]), i = q(i, c, d, g, b[f + a + 1], 12, h[a + 1]), g = q(g, i, c, d, b[f + a + 2], 17, h[a + 2]), d = q(d, g, i, c, b[f + a + 3], 22, h[a + 3])) : 32 > a ? (c = l(c, d, g, i, b[f + (a + 1) % 16], 5, h[a]), i = l(i, c, d, g, b[f + (a + 6) % 16], 9, h[a + 1]), g = l(g, i, c, d, b[f + (a + 11) % 16], 14, h[a + 2]), d = l(d, g, i, c, b[f + a % 16], 20, h[a + 3])) : 48 > a ? (c = m(c, d, g, i, b[f + (3 * a + 5) % 16], 4, h[a]), i = m(i, c, d, g, b[f + (3 * a + 8) % 16], 11, h[a + 1]), g = m(g, i, c, d, b[f + (3 * a + 11) % 16], 16, h[a + 2]), d = m(d, g, i, c, b[f + (3 * a + 14) % 16], 23, h[a + 3])) : (c = n(c, d, g, i, b[f + 3 * a % 16], 6, h[a]), i = n(i, c, d, g, b[f + (3 * a + 7) % 16], 10, h[a + 1]), g = n(g, i, c, d, b[f + (3 * a + 14) % 16], 15, h[a + 2]), d = n(d, g, i, c, b[f + (3 * a + 5) % 16], 21, h[a + 3]));
+        e[0] = e[0] + c | 0;
+        e[1] = e[1] + d | 0;
+        e[2] = e[2] + g | 0;
+        e[3] = e[3] + i | 0
+    },
+    _doFinalize: function() {
+        var b = this._data,
+        f = b.words,
+        a = 8 * this._nDataBytes,
+        e = 8 * b.sigBytes;
+        f[e >>> 5] |= 128 << 24 - e % 32;
+        f[(e + 64 >>> 9 << 4) + 14] = (a << 8 | a >>> 24) & 16711935 | (a << 24 | a >>> 8) & 4278255360;
+        b.sigBytes = 4 * (f.length + 1);
+        this._process();
+        b = this._hash.words;
+        for (f = 0; 4 > f; f++) a = b[f],
+        b[f] = (a << 8 | a >>> 24) & 16711935 | (a << 24 | a >>> 8) & 4278255360
+    }
+});
+j.MD5 = k._createHelper(p);
+j.HmacMD5 = k._createHmacHelper(p)
+})(Math);
 
-function m(e, t, n, o, i, r, a) {
-    return s(t ^ n ^ o, e, t, i, r, a)
+function get_pwd(pwd) {
+return CryptoJS.MD5(pwd + "zol") + '';
 }
-
-function h(e, t, n, o, i, r, a) {
-    return s(n ^ (t | ~o), e, t, i, r, a)
-}
-
-function c(e, t) {
-    e[t >> 5] |= 128 << t % 32,
-        e[14 + (t + 64 >>> 9 << 4)] = t;
-    var n, o, i, r, a, s = 1732584193, c = -271733879, u = -1732584194, l = 271733878;
-    for (n = 0; n < e.length; n += 16)
-        s = p(o = s, i = c, r = u, a = l, e[n], 7, -680876936),
-            l = p(l, s, c, u, e[n + 1], 12, -389564586),
-            u = p(u, l, s, c, e[n + 2], 17, 606105819),
-            c = p(c, u, l, s, e[n + 3], 22, -1044525330),
-            s = p(s, c, u, l, e[n + 4], 7, -176418897),
-            l = p(l, s, c, u, e[n + 5], 12, 1200080426),
-            u = p(u, l, s, c, e[n + 6], 17, -1473231341),
-            c = p(c, u, l, s, e[n + 7], 22, -45705983),
-            s = p(s, c, u, l, e[n + 8], 7, 1770035416),
-            l = p(l, s, c, u, e[n + 9], 12, -1958414417),
-            u = p(u, l, s, c, e[n + 10], 17, -42063),
-            c = p(c, u, l, s, e[n + 11], 22, -1990404162),
-            s = p(s, c, u, l, e[n + 12], 7, 1804603682),
-            l = p(l, s, c, u, e[n + 13], 12, -40341101),
-            u = p(u, l, s, c, e[n + 14], 17, -1502002290),
-            s = f(s, c = p(c, u, l, s, e[n + 15], 22, 1236535329), u, l, e[n + 1], 5, -165796510),
-            l = f(l, s, c, u, e[n + 6], 9, -1069501632),
-            u = f(u, l, s, c, e[n + 11], 14, 643717713),
-            c = f(c, u, l, s, e[n], 20, -373897302),
-            s = f(s, c, u, l, e[n + 5], 5, -701558691),
-            l = f(l, s, c, u, e[n + 10], 9, 38016083),
-            u = f(u, l, s, c, e[n + 15], 14, -660478335),
-            c = f(c, u, l, s, e[n + 4], 20, -405537848),
-            s = f(s, c, u, l, e[n + 9], 5, 568446438),
-            l = f(l, s, c, u, e[n + 14], 9, -1019803690),
-            u = f(u, l, s, c, e[n + 3], 14, -187363961),
-            c = f(c, u, l, s, e[n + 8], 20, 1163531501),
-            s = f(s, c, u, l, e[n + 13], 5, -1444681467),
-            l = f(l, s, c, u, e[n + 2], 9, -51403784),
-            u = f(u, l, s, c, e[n + 7], 14, 1735328473),
-            s = m(s, c = f(c, u, l, s, e[n + 12], 20, -1926607734), u, l, e[n + 5], 4, -378558),
-            l = m(l, s, c, u, e[n + 8], 11, -2022574463),
-            u = m(u, l, s, c, e[n + 11], 16, 1839030562),
-            c = m(c, u, l, s, e[n + 14], 23, -35309556),
-            s = m(s, c, u, l, e[n + 1], 4, -1530992060),
-            l = m(l, s, c, u, e[n + 4], 11, 1272893353),
-            u = m(u, l, s, c, e[n + 7], 16, -155497632),
-            c = m(c, u, l, s, e[n + 10], 23, -1094730640),
-            s = m(s, c, u, l, e[n + 13], 4, 681279174),
-            l = m(l, s, c, u, e[n], 11, -358537222),
-            u = m(u, l, s, c, e[n + 3], 16, -722521979),
-            c = m(c, u, l, s, e[n + 6], 23, 76029189),
-            s = m(s, c, u, l, e[n + 9], 4, -640364487),
-            l = m(l, s, c, u, e[n + 12], 11, -421815835),
-            u = m(u, l, s, c, e[n + 15], 16, 530742520),
-            s = h(s, c = m(c, u, l, s, e[n + 2], 23, -995338651), u, l, e[n], 6, -198630844),
-            l = h(l, s, c, u, e[n + 7], 10, 1126891415),
-            u = h(u, l, s, c, e[n + 14], 15, -1416354905),
-            c = h(c, u, l, s, e[n + 5], 21, -57434055),
-            s = h(s, c, u, l, e[n + 12], 6, 1700485571),
-            l = h(l, s, c, u, e[n + 3], 10, -1894986606),
-            u = h(u, l, s, c, e[n + 10], 15, -1051523),
-            c = h(c, u, l, s, e[n + 1], 21, -2054922799),
-            s = h(s, c, u, l, e[n + 8], 6, 1873313359),
-            l = h(l, s, c, u, e[n + 15], 10, -30611744),
-            u = h(u, l, s, c, e[n + 6], 15, -1560198380),
-            c = h(c, u, l, s, e[n + 13], 21, 1309151649),
-            s = h(s, c, u, l, e[n + 4], 6, -145523070),
-            l = h(l, s, c, u, e[n + 11], 10, -1120210379),
-            u = h(u, l, s, c, e[n + 2], 15, 718787259),
-            c = h(c, u, l, s, e[n + 9], 21, -343485551),
-            s = d(s, o),
-            c = d(c, i),
-            u = d(u, r),
-            l = d(l, a);
-    return [s, c, u, l]
-}
-
-function u(e) {
-    var t, n = "";
-    for (t = 0; t < 32 * e.length; t += 8)
-        n += String.fromCharCode(e[t >> 5] >>> t % 32 & 255);
-    return n
-}
-
-function l(e) {
-    var t, n = [];
-    for (n[(e.length >> 2) - 1] = void 0,
-             t = 0; t < n.length; t += 1)
-        n[t] = 0;
-    for (t = 0; t < 8 * e.length; t += 8)
-        n[t >> 5] |= (255 & e.charCodeAt(t / 8)) << t % 32;
-    return n
-}
-
-function o(e) {
-    var t, n, o = "0123456789abcdef", i = "";
-    for (n = 0; n < e.length; n += 1)
-        t = e.charCodeAt(n),
-            i += o.charAt(t >>> 4 & 15) + o.charAt(15 & t);
-    return i
-}
-
-function i(e) {
-    return unescape(encodeURIComponent(e))
-}
-
-function r(e) {
-    return u(c(l(t = i(e)), 8 * t.length));
-    var t
-}
-
-function a(e, t) {
-    return function (e, t) {
-        var n, o, i = l(e), r = [], a = [];
-        for (r[15] = a[15] = void 0,
-             16 < i.length && (i = c(i, 8 * e.length)),
-                 n = 0; n < 16; n += 1)
-            r[n] = 909522486 ^ i[n],
-                a[n] = 1549556828 ^ i[n];
-        return o = c(r.concat(l(t)), 512 + 8 * t.length),
-            u(c(a.concat(o), 640))
-    }(i(e), i(t))
-}
-
-function get_pwd(e, t, n) {
-    return t ? n ? a(t, e) : o(a(t, e)) : n ? r(e) : o(r(e))
-};
-
+调用方法： get_pwd('1234')

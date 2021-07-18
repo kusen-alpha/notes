@@ -1,0 +1,1 @@
+https://sso.jingoal.com/#/login
