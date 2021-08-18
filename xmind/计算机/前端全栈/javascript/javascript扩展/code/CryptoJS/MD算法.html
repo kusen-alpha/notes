@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script src="CryptoJS.min.js"></script>
+<script>
+    //方式一
+    var wordArray = CryptoJS.enc.Utf8.parse("12345");
+    var md5 = CryptoJS.MD5(wordArray);
+    alert(md5+"");
+    //方式二
+    var hasher = CryptoJS.algo.MD5.create();
+    hasher.update("12");   //默认是Utf8编码
+    hasher.update("345");  //update中的数据可以直接放在finalize方法中。
+    // hasher.reset();
+    var hash = hasher.finalize();
+    // var hash = hasher.finalize("111");
+    alert(hash);
+</script>
+
+</body>
+</html>

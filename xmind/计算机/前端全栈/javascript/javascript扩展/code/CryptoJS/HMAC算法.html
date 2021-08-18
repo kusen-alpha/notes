@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script src="CryptoJS.min.js"></script>
+<script>
+    //方式1
+    var data = CryptoJS.enc.Utf8.parse("12345");
+    var sha1 = CryptoJS.HmacSHA1(data, "1");
+    alert(sha1+"");
+    //方式二
+    var hasher = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA1, "1");
+    hasher.update("12345");
+    var sha1 = hasher.finalize();
+    alert(sha1);
+</script>
+
+</body>
+</html>
